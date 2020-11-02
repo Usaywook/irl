@@ -147,7 +147,7 @@ class IRLBatchPolopt(RLAlgorithm, metaclass=Hyperparametrized):
         return self.sampler.obtain_samples(itr)
 
     def process_samples(self, itr, paths):
-        return self.sampler.process_samples(itr, paths,irl=True)
+        return self.sampler.process_samples(itr, paths, irl=True)
 
     def log_avg_returns(self, paths):
         undiscounted_returns = [sum(path["rewards"]) for path in paths]

@@ -17,7 +17,8 @@ from inverse_rl.utils.hyper_sweep import run_sweep_parallel, run_sweep_serial
 
 
 def main(exp_name=None, fusion=True):
-    env = TfEnv(CustomGymEnv('CustomAnt-v0', record_video=False, record_log=False))
+    # env = TfEnv(CustomGymEnv('CustomAnt-v0', record_video=False, record_log=False))
+    env = TfEnv(CustomGymEnv('CustomAnt-v0', record_video=False, record_log=True))
     # load ~2 iterations worth of data from each forward RL experiment as demos
     experts = load_latest_experts_multiple_runs('data/ant_data_collect', n=2)
     #experts = load_latest_experts('data/ant_data_collect', n=5)
@@ -41,7 +42,7 @@ def main(exp_name=None, fusion=True):
 		tempw=t_empw_model,
         qvar_model=qvar_model,
         irl_model=irl_model,
-        n_itr=130,
+        n_itr=3000, #130,
         batch_size=20000,
         max_path_length=500,
         discount=0.99,
@@ -52,6 +53,7 @@ def main(exp_name=None, fusion=True):
         lambda_i=1.0,
         zero_environment_reward=True,
         baseline=LinearFeatureBaseline(env_spec=env.spec),
+        plot=False
     )
     with rllab_logdir(algo=algo, dirname='data/ant_state_irl'):
     #with rllab_logdir(algo=algo, dirname='data/ant_state_irl/%s' % exp_name): # if you use multiple runs, use this line instead of above

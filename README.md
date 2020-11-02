@@ -34,3 +34,21 @@ url={https://openreview.net/forum?id=HJlmHoR5tQ},
 }
 ```
 
+# environment setup
+export PYTHONPATH=/media/usaywook/rllab/:/media/usaywook/inverse_rl/:$PYTHONPATH
+https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.0.1-cp35-cp35m-linux_x86_64.whl; 'linux' in sys_platform 
+-> https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.2.0-cp35-cp35m-linux_x86_64.whl; 'linux' in sys_platform 
+
+conda create -n irl python=3.6.9
+conda activate irl
+conda install -c anaconda tensorflow-gpu==1.6.0
+
+in rllab/sampler/stateful_pool.py
+from joblib.pool import MemmapingPool -> from joblib.pool import MemmappingPool
+
+pip install gym path python-dateutil joblib theano pyprind cached_property numpy==1.16.4
+
+pip install mujoco-py==1.50.1.68
+
+in rllab/envs/gym_env.py
+from gym.wrappers.monitoring import logger as monitor_logger -> monitor_logger = logging.getLogger()

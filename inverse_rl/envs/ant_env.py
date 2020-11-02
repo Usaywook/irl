@@ -196,7 +196,7 @@ class CustomAntEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     A modified ant env with lower joint gear ratios so it flips less often and learns faster.
     """
     def __init__(self, max_timesteps=1000, disabled=False, gear=150):
-        #mujoco_env.MujocoEnv.__init__(self, 'ant.xml', 5)
+#         mujoco_env.MujocoEnv.__init__(self, 'ant.xml', 5)
         utils.EzPickle.__init__(self)
         self.timesteps = 0
         self.max_timesteps=max_timesteps

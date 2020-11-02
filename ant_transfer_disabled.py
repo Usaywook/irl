@@ -1,6 +1,6 @@
 import tensorflow as tf
 import os
-
+import pdb
 from sandbox.rocky.tf.policies.gaussian_mlp_policy import GaussianMLPPolicy
 from sandbox.rocky.tf.envs.base import TfEnv
 from rllab.baselines.linear_feature_baseline import LinearFeatureBaseline
@@ -14,13 +14,13 @@ from inverse_rl.models.eairl import *
 from inverse_rl.models.empowerment import *
 from inverse_rl.models.qvar import *
 from inverse_rl.models.tf_util import load_prior_params
-from inverse_rl.utils.log_utils import rllab_logdir, load_latest_experts
+from inverse_rl.utils.log_utils import rllab_logdir, load_latest_experts, load_latest_experts_multiple_runs
 from inverse_rl.utils.hyper_sweep import run_sweep_parallel, run_sweep_serial
 
 
 DATA_DIR = 'data/ant_state_irl'
 def main(exp_name=None, params_folder='data/ant_state_irl'):
-    #env = TfEnv(CustomGymEnv('PointMazeLeft-v0', record_video=True, record_log=True,force_reset=True))
+    # env = TfEnv(CustomGymEnv('PointMazeLeft-v0', record_video=True, record_log=True,force_reset=True))
     env = TfEnv(CustomGymEnv('DisabledAnt-v0', record_video=False, record_log=False,force_reset=False))
 
     irl_itr=90# earlier IRL iterations overfit less; either 80 or 90 seems to work well. But I usually search through 60,65,70,75, .. uptil 100
@@ -28,15 +28,16 @@ def main(exp_name=None, params_folder='data/ant_state_irl'):
     params_file = os.path.join(DATA_DIR, 'itr_%d.pkl' % (irl_itr))
     prior_params = load_prior_params(params_file)
 
-
     '''q_itr = 400  # earlier IRL iterations overfit less; 100 seems to work well.
-    #params_file = os.p90ath.join(DATA_DIR, '%s/itr_%d.pkl' % (params_folder, irl_itr))
+    #params_file = os.path.join(DATA_DIR, '%s/itr_%d.pkl' % (params_folder, irl_itr))
     params_file = os.path.join(DATA_DIR, 'itr_%d.pkl' % (q_itr))
     prior_params_q = load_prior_params(params_file)'''
 
+    experts = load_latest_experts_multiple_runs('data/ant_data_collect', n=2)
+
     qvar = GaussianMLPInversePolicy(name='qvar_model', env_spec=env.spec, hidden_sizes=(32, 32))
     qvar_model = Qvar(env=env,qvar=qvar, expert_trajs=None,max_itrs=10)
-    irl_model = EAIRL(env=env, expert_trajs=None, state_only=False, score_discrim=False)
+    irl_model = EAIRL(env=env, expert_trajs=experts, state_only=False, score_discrim=False)
     empw_model = Empowerment(env=env,max_itrs=1)
     t_empw_model = Empowerment(env=env,scope='t_efn', max_itrs=2, name='empowerment2')
 
@@ -48,7 +49,7 @@ def main(exp_name=None, params_folder='data/ant_state_irl'):
         init_irl_params=prior_params['irl_params'],
         init_empw_params=None,#prior_params['empw_params'],
         init_qvar_params=None,#prior_params['qvar_params'],
-        init_policy_params=None,#prior_params['policy_params'],
+        init_policy_params=prior_params['policy_params'], #None
         env=env,
         policy=policy,
 		empw=empw_model,
@@ -60,15 +61,16 @@ def main(exp_name=None, params_folder='data/ant_state_irl'):
         max_path_length=500,
         discount=0.99,
         store_paths=False,
-        train_irl=False,
-        train_empw=False,
-        train_qvar=False,
+        train_irl=True,
+        train_empw=True,
+        train_qvar=True,
         irl_model_wt=1.0,
         entropy_weight=0.1,
         zero_environment_reward=True,
         baseline=LinearFeatureBaseline(env_spec=env.spec),
         log_params_folder=params_folder,
         log_experiment_name=exp_name,
+        # plot=True,
     )
 
     with rllab_logdir(algo=algo, dirname='data/ant_transfer'):#%s'%exp_name):

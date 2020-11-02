@@ -7,7 +7,7 @@ from sandbox.rocky.tf.misc import tensor_utils
 import tensorflow as tf
 import numpy as np
 from sandbox.rocky.tf.optimizers.conjugate_gradient_optimizer import ConjugateGradientOptimizer
-
+import pdb
 
 class IRLNPO(IRLBatchPolopt):
     """
@@ -89,7 +89,7 @@ class IRLNPO(IRLBatchPolopt):
             valid_var = None
 
         dist_info_vars = self.policy.dist_info_sym(obs_var, state_info_vars)
-        #dist_info_vars["mean"]=dist_info_vars["mean"]+empw_var
+        # dist_info_vars["mean"]=dist_info_vars["mean"]+empw_var
         q_input = tf.concat([obs_var,nobs_var],axis=1)
         q_dist_info_vars = self.qvar_model.dist_info_sym(q_input, state_info_vars)
 
@@ -121,12 +121,10 @@ class IRLNPO(IRLBatchPolopt):
 
         if self.train_empw:
             print("training empowerment========================================")
-            pred = dist.log_likelihood(dist.sample(dist_info_vars),dist_info_vars)+empw_var
+            pred = dist.log_likelihood(dist.sample(dist_info_vars),dist_info_vars) + empw_var
             target = dist.log_likelihood(dist.sample(q_dist_info_vars),q_dist_info_vars)
+            # print("pred = {}, target={}".format(pred.shape, target.shape))
             surr_loss = surr_loss+self.lambda_i*tf.losses.mean_squared_error(predictions=pred,labels=target)
-
-
-
 
         input_list += state_info_vars_list + old_dist_info_vars_list
         if is_recurrent:
